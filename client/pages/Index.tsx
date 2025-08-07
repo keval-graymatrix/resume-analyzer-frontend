@@ -1,15 +1,121 @@
-import { useState, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Upload, FileText, Brain, Download, Send, Star } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, FileText, Brain, Download, Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AnalysisSection {
   title: string;
+  emoji: string;
   content: string;
   type: "summary" | "strengths" | "weaknesses" | "roles" | "gaps" | "score";
 }
+
+// Custom typewriter hook
+const useTypewriter = (text: string, speed: number = 30) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    if (!text) return;
+    
+    setDisplayText("");
+    setIsComplete(false);
+    let i = 0;
+    
+    const timer = setInterval(() => {
+      if (i < text.length) {
+        setDisplayText(text.slice(0, i + 1));
+        i++;
+      } else {
+        setIsComplete(true);
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed]);
+
+  return { displayText, isComplete };
+};
+
+// Skeleton message component
+const SkeletonMessage = ({ delay }: { delay: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.4 }}
+    className="flex gap-3 mb-4"
+  >
+    <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500 flex-shrink-0">
+      <AvatarFallback className="text-white text-xs">
+        <Bot className="h-4 w-4" />
+      </AvatarFallback>
+    </Avatar>
+    <div className="flex-1 bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100">
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+        </div>
+        <div className="space-y-2">
+          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation" />
+          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation w-5/6" />
+          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation w-4/6" />
+        </div>
+      </div>
+    </div>
+  </motion.div>
+);
+
+// Typewriter message component
+const TypewriterMessage = ({ section, delay }: { section: AnalysisSection; delay: number }) => {
+  const [showMessage, setShowMessage] = useState(false);
+  const { displayText, isComplete } = useTypewriter(section.content, 25);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMessage(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  if (!showMessage) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="flex gap-3 mb-4"
+    >
+      <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500 flex-shrink-0">
+        <AvatarFallback className="text-white text-xs">
+          <Bot className="h-4 w-4" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100 max-w-[85%]">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">{section.emoji}</span>
+          <h3 className="font-semibold text-slate-800 text-sm">
+            {section.title}
+          </h3>
+        </div>
+        <div className="text-slate-700 text-sm leading-relaxed">
+          <span className="whitespace-pre-line">{displayText}</span>
+          {!isComplete && (
+            <motion.span
+              animate={{ opacity: [1, 0] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className="text-indigo-500 font-bold ml-1"
+            >
+              |
+            </motion.span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export default function Index() {
   const [file, setFile] = useState<File | null>(null);
@@ -17,6 +123,7 @@ export default function Index() {
   const [analysis, setAnalysis] = useState<AnalysisSection[]>([]);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showSkeletons, setShowSkeletons] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -62,45 +169,55 @@ export default function Index() {
 
     setIsAnalyzing(true);
     setShowAnalysis(true);
+    setShowSkeletons(true);
+    setAnalysis([]);
 
-    // Simulate API call with realistic delay
+    // Show skeletons for 3 seconds
     await new Promise((resolve) => setTimeout(resolve, 3000));
+    
+    setShowSkeletons(false);
 
     const mockAnalysis: AnalysisSection[] = [
       {
         title: "Summary",
+        emoji: "🔍",
         content:
           "Experienced software engineer with 5+ years in full-stack development. Strong background in React, Node.js, and cloud technologies. Shows consistent career progression and leadership potential.",
         type: "summary",
       },
       {
         title: "Strengths",
+        emoji: "✅",
         content:
           "• Excellent technical skills in modern web technologies\n• Strong problem-solving abilities\n• Experience with agile methodologies\n• Leadership experience managing small teams\n• Continuous learning mindset",
         type: "strengths",
       },
       {
         title: "Weaknesses",
+        emoji: "❌",
         content:
           "• Limited experience with mobile development\n• Could benefit from more cloud architecture experience\n• Missing specific industry domain knowledge\n• Needs stronger project management certifications",
         type: "weaknesses",
       },
       {
         title: "Suggested Roles",
+        emoji: "💼",
         content:
           "• Senior Frontend Developer\n• Full-Stack Engineer\n• Technical Lead\n• Software Architect (with additional experience)\n• Engineering Manager (entry-level)",
         type: "roles",
       },
       {
         title: "Skill Gaps",
+        emoji: "🛠️",
         content:
           "• React Native or Flutter for mobile\n• AWS/Azure advanced certifications\n• System design for scale\n• DevOps and CI/CD pipelines\n• Machine learning fundamentals",
         type: "gaps",
       },
       {
-        title: "Overall Score",
+        title: "Score Breakdown",
+        emoji: "📊",
         content:
-          "8.2/10 - Strong candidate with excellent technical foundation and growth potential. Ready for senior-level positions.",
+          "Technical Skills: 9/10\nExperience Level: 8/10\nLeadership Potential: 7/10\nAdaptability: 8/10\n\nOverall Score: 8.2/10 - Strong candidate with excellent technical foundation and growth potential. Ready for senior-level positions.",
         type: "score",
       },
     ];
@@ -248,110 +365,93 @@ export default function Index() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="p-6 h-[600px] backdrop-blur-sm bg-white/70 border-white/20 shadow-xl flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold text-slate-800">
-                  Analysis Results
+            <Card className="h-[600px] backdrop-blur-sm bg-slate-50/80 border-white/20 shadow-xl flex flex-col rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between p-6 border-b border-slate-200/50 bg-white/60">
+                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-indigo-600" />
+                  AI Analysis
                 </h2>
-                {analysis.length > 0 && (
+                {analysis.length > 0 && !isAnalyzing && (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Save PDF
+                    <Button variant="outline" size="sm" className="text-xs">
+                      <Download className="h-3 w-3 mr-1" />
+                      Export
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Send className="h-4 w-4 mr-2" />
-                      Send to HR
+                    <Button variant="outline" size="sm" className="text-xs">
+                      <Send className="h-3 w-3 mr-1" />
+                      Share
                     </Button>
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-4">
-                {!showAnalysis ? (
-                  <div className="flex items-center justify-center h-full text-slate-500">
-                    <div className="text-center">
-                      <Brain className="h-16 w-16 mx-auto mb-4 text-slate-300" />
-                      <p className="text-lg">Upload a resume to get started</p>
-                    </div>
-                  </div>
-                ) : isAnalyzing ? (
-                  // Loading skeleton
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.2 }}
-                        className="flex gap-3"
-                      >
-                        <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500">
-                          <AvatarFallback className="text-white text-sm">
-                            AI
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-slate-200 rounded animate-pulse" />
-                          <div className="h-4 bg-slate-200 rounded animate-pulse w-3/4" />
+              {/* Chat-like scrollable area */}
+              <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50/50 to-white/50">
+                <AnimatePresence mode="wait">
+                  {!showAnalysis ? (
+                    <motion.div
+                      key="empty-state"
+                      className="flex items-center justify-center h-full text-slate-500"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <div className="text-center">
+                        <div className="relative mb-4">
+                          <Brain className="h-16 w-16 mx-auto text-slate-300" />
+                          <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="absolute inset-0 h-16 w-16 mx-auto border-2 border-slate-200 rounded-full"
+                          />
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  // Analysis results with typewriter effect
-                  <div className="space-y-4">
-                    {analysis.map((section, index) => (
-                      <motion.div
-                        key={section.type}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.3 }}
-                        className="flex gap-3"
-                      >
-                        <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500">
-                          <AvatarFallback className="text-white text-sm">
-                            AI
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 bg-slate-50 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-slate-800">
-                              {section.title}
-                            </h3>
-                            {section.type === "score" && (
-                              <div className="flex gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= 4
-                                        ? "text-yellow-400 fill-current"
-                                        : "text-slate-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: index * 0.3 + 0.5 }}
-                            className="text-slate-700 whitespace-pre-line leading-relaxed"
-                          >
-                            {section.content}
-                          </motion.p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
+                        <p className="text-lg font-medium">Ready to analyze your resume</p>
+                        <p className="text-sm text-slate-400 mt-1">Upload a file to get started</p>
+                      </div>
+                    </motion.div>
+                  ) : showSkeletons ? (
+                    <motion.div
+                      key="skeleton-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <SkeletonMessage key={i} delay={i * 0.3} />
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="analysis-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="space-y-2"
+                    >
+                      {analysis.map((section, index) => (
+                        <TypewriterMessage
+                          key={section.type}
+                          section={section}
+                          delay={index * 1500}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </Card>
           </motion.div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes gradient-animation {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .bg-gradient-animation {
+          animation: gradient-animation 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
