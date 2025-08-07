@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 interface AnalysisSection {
   title: string;
   content: string;
-  type: 'summary' | 'strengths' | 'weaknesses' | 'roles' | 'gaps' | 'score';
+  type: "summary" | "strengths" | "weaknesses" | "roles" | "gaps" | "score";
 }
 
 export default function Index() {
@@ -33,7 +33,11 @@ export default function Index() {
     e.preventDefault();
     setIsDragOver(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && (droppedFile.type === 'application/pdf' || droppedFile.name.endsWith('.docx'))) {
+    if (
+      droppedFile &&
+      (droppedFile.type === "application/pdf" ||
+        droppedFile.name.endsWith(".docx"))
+    ) {
       setFile(droppedFile);
     }
   }, []);
@@ -46,55 +50,61 @@ export default function Index() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const analyzeResume = async () => {
     if (!file) return;
-    
+
     setIsAnalyzing(true);
     setShowAnalysis(true);
-    
+
     // Simulate API call with realistic delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const mockAnalysis: AnalysisSection[] = [
       {
         title: "Summary",
-        content: "Experienced software engineer with 5+ years in full-stack development. Strong background in React, Node.js, and cloud technologies. Shows consistent career progression and leadership potential.",
-        type: "summary"
+        content:
+          "Experienced software engineer with 5+ years in full-stack development. Strong background in React, Node.js, and cloud technologies. Shows consistent career progression and leadership potential.",
+        type: "summary",
       },
       {
         title: "Strengths",
-        content: "• Excellent technical skills in modern web technologies\n• Strong problem-solving abilities\n• Experience with agile methodologies\n• Leadership experience managing small teams\n• Continuous learning mindset",
-        type: "strengths"
+        content:
+          "• Excellent technical skills in modern web technologies\n• Strong problem-solving abilities\n• Experience with agile methodologies\n• Leadership experience managing small teams\n• Continuous learning mindset",
+        type: "strengths",
       },
       {
         title: "Weaknesses",
-        content: "• Limited experience with mobile development\n• Could benefit from more cloud architecture experience\n• Missing specific industry domain knowledge\n• Needs stronger project management certifications",
-        type: "weaknesses"
+        content:
+          "• Limited experience with mobile development\n• Could benefit from more cloud architecture experience\n• Missing specific industry domain knowledge\n• Needs stronger project management certifications",
+        type: "weaknesses",
       },
       {
         title: "Suggested Roles",
-        content: "• Senior Frontend Developer\n• Full-Stack Engineer\n• Technical Lead\n• Software Architect (with additional experience)\n• Engineering Manager (entry-level)",
-        type: "roles"
+        content:
+          "• Senior Frontend Developer\n• Full-Stack Engineer\n• Technical Lead\n• Software Architect (with additional experience)\n• Engineering Manager (entry-level)",
+        type: "roles",
       },
       {
         title: "Skill Gaps",
-        content: "• React Native or Flutter for mobile\n• AWS/Azure advanced certifications\n• System design for scale\n• DevOps and CI/CD pipelines\n• Machine learning fundamentals",
-        type: "gaps"
+        content:
+          "• React Native or Flutter for mobile\n• AWS/Azure advanced certifications\n• System design for scale\n• DevOps and CI/CD pipelines\n• Machine learning fundamentals",
+        type: "gaps",
       },
       {
         title: "Overall Score",
-        content: "8.2/10 - Strong candidate with excellent technical foundation and growth potential. Ready for senior-level positions.",
-        type: "score"
-      }
+        content:
+          "8.2/10 - Strong candidate with excellent technical foundation and growth potential. Ready for senior-level positions.",
+        type: "score",
+      },
     ];
-    
+
     setAnalysis(mockAnalysis);
     setIsAnalyzing(false);
   };
@@ -103,7 +113,7 @@ export default function Index() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
@@ -128,16 +138,18 @@ export default function Index() {
             transition={{ delay: 0.2 }}
           >
             <Card className="p-8 h-fit backdrop-blur-sm bg-white/70 border-white/20 shadow-xl">
-              <h2 className="text-2xl font-semibold mb-6 text-slate-800">Upload Your Resume</h2>
-              
+              <h2 className="text-2xl font-semibold mb-6 text-slate-800">
+                Upload Your Resume
+              </h2>
+
               {/* Upload Area */}
               <div
                 className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
                   isDragOver
                     ? "border-indigo-500 bg-indigo-50/50"
                     : file
-                    ? "border-green-500 bg-green-50/50"
-                    : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
+                      ? "border-green-500 bg-green-50/50"
+                      : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -151,7 +163,7 @@ export default function Index() {
                   className="hidden"
                   onChange={handleFileSelect}
                 />
-                
+
                 <motion.div
                   animate={{ scale: isDragOver ? 1.1 : 1 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -162,12 +174,16 @@ export default function Index() {
                     <Upload className="h-16 w-16 text-slate-400 mx-auto mb-4" />
                   )}
                 </motion.div>
-                
+
                 <div className="space-y-2">
                   {file ? (
                     <>
-                      <p className="text-lg font-medium text-green-700">{file.name}</p>
-                      <p className="text-sm text-green-600">{formatFileSize(file.size)}</p>
+                      <p className="text-lg font-medium text-green-700">
+                        {file.name}
+                      </p>
+                      <p className="text-sm text-green-600">
+                        {formatFileSize(file.size)}
+                      </p>
                     </>
                   ) : (
                     <>
@@ -178,14 +194,16 @@ export default function Index() {
                     </>
                   )}
                 </div>
-                
+
                 {isDragOver && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="absolute inset-0 bg-indigo-500/10 rounded-xl flex items-center justify-center"
                   >
-                    <div className="text-indigo-600 font-medium">Drop to upload</div>
+                    <div className="text-indigo-600 font-medium">
+                      Drop to upload
+                    </div>
                   </motion.div>
                 )}
               </div>
@@ -205,7 +223,11 @@ export default function Index() {
                     {isAnalyzing ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                         className="h-5 w-5 border-2 border-white border-t-transparent rounded-full"
                       />
                     ) : (
@@ -228,7 +250,9 @@ export default function Index() {
           >
             <Card className="p-6 h-[600px] backdrop-blur-sm bg-white/70 border-white/20 shadow-xl flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold text-slate-800">Analysis Results</h2>
+                <h2 className="text-2xl font-semibold text-slate-800">
+                  Analysis Results
+                </h2>
                 {analysis.length > 0 && (
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm">
@@ -263,7 +287,9 @@ export default function Index() {
                         className="flex gap-3"
                       >
                         <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500">
-                          <AvatarFallback className="text-white text-sm">AI</AvatarFallback>
+                          <AvatarFallback className="text-white text-sm">
+                            AI
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-2">
                           <div className="h-4 bg-slate-200 rounded animate-pulse" />
@@ -284,18 +310,24 @@ export default function Index() {
                         className="flex gap-3"
                       >
                         <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500">
-                          <AvatarFallback className="text-white text-sm">AI</AvatarFallback>
+                          <AvatarFallback className="text-white text-sm">
+                            AI
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 bg-slate-50 rounded-lg p-4">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-slate-800">{section.title}</h3>
-                            {section.type === 'score' && (
+                            <h3 className="font-semibold text-slate-800">
+                              {section.title}
+                            </h3>
+                            {section.type === "score" && (
                               <div className="flex gap-1">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star
                                     key={star}
                                     className={`h-4 w-4 ${
-                                      star <= 4 ? 'text-yellow-400 fill-current' : 'text-slate-300'
+                                      star <= 4
+                                        ? "text-yellow-400 fill-current"
+                                        : "text-slate-300"
                                     }`}
                                   />
                                 ))}
