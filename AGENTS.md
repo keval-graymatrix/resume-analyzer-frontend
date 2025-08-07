@@ -44,7 +44,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 ### Styling System
 
 - **Primary**: TailwindCSS 3 utility classes
-- **Theme and design tokens**: Configure in `client/global.css` 
+- **Theme and design tokens**: Configure in `client/global.css`
 - **UI components**: Pre-built library in `client/components/ui/`
 - **Utility**: `cn()` function combines `clsx` + `tailwind-merge` for conditional classes
 
@@ -58,6 +58,7 @@ className={cn(
 ```
 
 Path aliases:
+
 - `@/*` - Client folder
 
 ## Development Commands
@@ -77,8 +78,10 @@ npm test          # Run Vitest tests
 Open `client/global.css` and `tailwind.config.ts` and add new tailwind colors.
 
 ### New Page Route
+
 1. Create component in `client/pages/MyPage.tsx`
 2. Add route in `client/App.tsx`:
+
 ```typescript
 <Route path="/my-page" element={<MyPage />} />
 ```

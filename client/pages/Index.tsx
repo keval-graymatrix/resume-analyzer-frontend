@@ -19,11 +19,11 @@ const useTypewriter = (text: string, speed: number = 30) => {
 
   useEffect(() => {
     if (!text) return;
-    
+
     setDisplayText("");
     setIsComplete(false);
     let i = 0;
-    
+
     const timer = setInterval(() => {
       if (i < text.length) {
         setDisplayText(text.slice(0, i + 1));
@@ -70,7 +70,13 @@ const SkeletonMessage = ({ delay }: { delay: number }) => (
 );
 
 // Typewriter message component
-const TypewriterMessage = ({ section, delay }: { section: AnalysisSection; delay: number }) => {
+const TypewriterMessage = ({
+  section,
+  delay,
+}: {
+  section: AnalysisSection;
+  delay: number;
+}) => {
   const [showMessage, setShowMessage] = useState(false);
   const { displayText, isComplete } = useTypewriter(section.content, 25);
 
@@ -174,7 +180,7 @@ export default function Index() {
 
     // Show skeletons for 3 seconds
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    
+
     setShowSkeletons(false);
 
     const mockAnalysis: AnalysisSection[] = [
@@ -405,8 +411,12 @@ export default function Index() {
                             className="absolute inset-0 h-16 w-16 mx-auto border-2 border-slate-200 rounded-full"
                           />
                         </div>
-                        <p className="text-lg font-medium">Ready to analyze your resume</p>
-                        <p className="text-sm text-slate-400 mt-1">Upload a file to get started</p>
+                        <p className="text-lg font-medium">
+                          Ready to analyze your resume
+                        </p>
+                        <p className="text-sm text-slate-400 mt-1">
+                          Upload a file to get started
+                        </p>
                       </div>
                     </motion.div>
                   ) : showSkeletons ? (
@@ -445,8 +455,12 @@ export default function Index() {
 
       <style jsx global>{`
         @keyframes gradient-animation {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
         }
         .bg-gradient-animation {
           animation: gradient-animation 2s ease-in-out infinite;
