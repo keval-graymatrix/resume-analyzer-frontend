@@ -197,8 +197,7 @@ export default function Index() {
       // Convert file to base64
       const fileBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () =>
-          resolve(reader.result?.toString().split(",")[1] || "");
+        reader.onload = () => resolve(reader.result?.toString().split(",")[1] || "");
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
@@ -226,9 +225,68 @@ export default function Index() {
       console.error("Error analyzing resume:", err);
       setError("Failed to analyze resume. Please try again.");
 
-      // fallback mock data...
+      // Fallback to mock data for demo purposes
       const mockData: ApiResponse = {
-        /* your mock object here */
+        resumeText: "Sample resume text...",
+        email: "priyaank29@gmail.com",
+        phone: "+91 93266 22519",
+        experience: [
+          {
+            company: "Freelance",
+            duration: "September 2021 – Present",
+            role: "Software Engineer, Lead Software Engineer",
+            responsibilities: [
+              "Engineered scalable, high-performance web applications using Next.js, React, and Node.js",
+              "Architected and deployed cloud-native backend systems leveraging Firebase, AWS, and GCP",
+              "Led infrastructure automation initiatives, setting up CI/CD pipelines",
+            ],
+          },
+        ],
+        totalExperienceInYears: 6.9,
+        summary:
+          "Versatile software engineer with nearly 7 years of experience specializing in full-stack web development, cloud-native backend systems, and automation.",
+        strengths: [
+          "Strong expertise in full-stack development using modern frameworks",
+          "Proficient in cloud technologies including AWS, GCP, and Firebase",
+          "Demonstrated leadership in infrastructure automation and CI/CD pipeline setup",
+        ],
+        weaknesses: [
+          "Relatively short tenure at some roles which may raise questions about stability",
+          "Limited explicit mention of formal leadership roles beyond freelance",
+          "No direct mention of advanced certifications",
+        ],
+        suggested_roles: [
+          "Senior Full-Stack Developer",
+          "Cloud Solutions Engineer",
+          "Lead Software Engineer",
+          "DevOps Engineer",
+        ],
+        skill_gaps: [
+          "Advanced DevOps tools beyond Docker and GitHub Actions",
+          "Deeper expertise in machine learning frameworks",
+          "Formal leadership or management training",
+        ],
+        impact: 80,
+        skills_score: 85,
+        overall_score: 82,
+        matched: true,
+        questions_answers: [
+          {
+            question:
+              "Does the candidate have experience with cloud platforms?",
+            answer: "yes",
+            reason:
+              "Extensive experience with AWS, GCP, and Firebase mentioned throughout the resume",
+          },
+          {
+            question: "Does the candidate have leadership experience?",
+            answer: "yes",
+            reason:
+              "Led infrastructure automation initiatives and mentored junior developers",
+          },
+        ],
+        route: "senior",
+        missingSkills: ["System Design", "Mentorship", "Project Management"],
       };
       setAnalysis(mockData);
     } finally {
@@ -278,8 +336,8 @@ export default function Index() {
                     isDragOver
                       ? "border-indigo-500 bg-indigo-50/50"
                       : file
-                      ? "border-green-500 bg-green-50/50"
-                      : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
+                        ? "border-green-500 bg-green-50/50"
+                        : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -468,7 +526,7 @@ export default function Index() {
                             <ScoreItem
                               label="Experience Level"
                               value={Math.round(
-                                (analysis.totalExperienceInYears / 10) * 10
+                                (analysis.totalExperienceInYears / 10) * 10,
                               )}
                               max={10}
                             />
