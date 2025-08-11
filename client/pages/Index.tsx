@@ -181,7 +181,8 @@ export default function Index() {
 
     try {
       const formData = new FormData();
-      formData.append('resume', file);
+      formData.append('fileBase64', file);
+      formData.append('filename', "resume.pdf");
 
       const response = await fetch('http://localhost:3000/analyze-resume', {
         method: 'POST',
