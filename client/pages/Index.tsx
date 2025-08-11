@@ -232,7 +232,7 @@ export default function Index() {
     checkNewPage(60);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('📊 Score Breakdown', 20, yPosition);
+    doc.text('���� Score Breakdown', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(12);
@@ -632,7 +632,7 @@ export default function Index() {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={exportToPDF}>
                           <Download className="h-4 w-4 mr-1" />
                           Export
                         </Button>
