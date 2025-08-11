@@ -1,135 +1,138 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileText, Brain, Download, Send, Bot } from "lucide-react";
+import { 
+  Upload, 
+  FileText, 
+  Brain, 
+  Download, 
+  Send, 
+  Bot, 
+  CheckCircle, 
+  XCircle,
+  User,
+  TrendingUp,
+  AlertTriangle,
+  Briefcase,
+  Target,
+  BarChart3,
+  Check,
+  X
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
-interface AnalysisSection {
-  title: string;
-  emoji: string;
-  content: string;
-  type: "summary" | "strengths" | "weaknesses" | "roles" | "gaps" | "score";
+interface ApiResponse {
+  resumeText: string;
+  email: string;
+  phone: string;
+  experience: {
+    company: string;
+    duration: string;
+    role: string;
+    responsibilities: string[];
+  }[];
+  totalExperienceInYears: number;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  suggested_roles: string[];
+  skill_gaps: string[];
+  impact: number;
+  skills_score: number;
+  overall_score: number | null;
+  matched: boolean;
+  questions_answers: {
+    question: string;
+    answer: string;
+    reason: string;
+  }[];
+  route: string;
+  missingSkills: string[];
 }
 
-// Custom typewriter hook
-const useTypewriter = (text: string, speed: number = 30) => {
-  const [displayText, setDisplayText] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
+// Skeleton loader for analysis results
+const AnalysisSkeleton = () => (
+  <div className="space-y-6">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <Card key={i} className="animate-pulse">
+        <CardHeader>
+          <div className="h-4 bg-slate-200 rounded w-1/3" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="h-3 bg-slate-200 rounded" />
+            <div className="h-3 bg-slate-200 rounded w-5/6" />
+            <div className="h-3 bg-slate-200 rounded w-4/6" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 
-  useEffect(() => {
-    if (!text) return;
+// Score Circle Component
+const ScoreCircle = ({ score, size = 120 }: { score: number; size?: number }) => {
+  const radius = size / 2 - 8;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
 
-    setDisplayText("");
-    setIsComplete(false);
-    let i = 0;
-
-    const timer = setInterval(() => {
-      if (i < text.length) {
-        setDisplayText(text.slice(0, i + 1));
-        i++;
-      } else {
-        setIsComplete(true);
-        clearInterval(timer);
-      }
-    }, speed);
-
-    return () => clearInterval(timer);
-  }, [text, speed]);
-
-  return { displayText, isComplete };
-};
-
-// Skeleton message component
-const SkeletonMessage = ({ delay }: { delay: number }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.4 }}
-    className="flex gap-3 mb-4"
-  >
-    <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500 flex-shrink-0">
-      <AvatarFallback className="text-white text-xs">
-        <Bot className="h-4 w-4" />
-      </AvatarFallback>
-    </Avatar>
-    <div className="flex-1 bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100">
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 bg-slate-200 rounded animate-pulse" />
-          <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation" />
-          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation w-5/6" />
-          <div className="h-3 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded animate-pulse bg-[length:200%_100%] bg-gradient-animation w-4/6" />
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="8"
+          fill="transparent"
+          className="text-slate-200"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="8"
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          className="text-indigo-500 transition-all duration-1000"
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-slate-800">{score}</div>
+          <div className="text-xs text-slate-500">Overall</div>
         </div>
       </div>
     </div>
-  </motion.div>
-);
-
-// Typewriter message component
-const TypewriterMessage = ({
-  section,
-  delay,
-}: {
-  section: AnalysisSection;
-  delay: number;
-}) => {
-  const [showMessage, setShowMessage] = useState(false);
-  const { displayText, isComplete } = useTypewriter(section.content, 25);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowMessage(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
-
-  if (!showMessage) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="flex gap-3 mb-4"
-    >
-      <Avatar className="h-8 w-8 bg-gradient-to-r from-indigo-500 to-purple-500 flex-shrink-0">
-        <AvatarFallback className="text-white text-xs">
-          <Bot className="h-4 w-4" />
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm border border-slate-100 max-w-[85%]">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">{section.emoji}</span>
-          <h3 className="font-semibold text-slate-800 text-sm">
-            {section.title}
-          </h3>
-        </div>
-        <div className="text-slate-700 text-sm leading-relaxed">
-          <span className="whitespace-pre-line">{displayText}</span>
-          {!isComplete && (
-            <motion.span
-              animate={{ opacity: [1, 0] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-              className="text-indigo-500 font-bold ml-1"
-            >
-              |
-            </motion.span>
-          )}
-        </div>
-      </div>
-    </motion.div>
   );
 };
+
+// Individual Score Item
+const ScoreItem = ({ label, value, max = 100 }: { label: string; value: number; max?: number }) => (
+  <div className="flex items-center justify-between py-2">
+    <span className="text-sm text-slate-600">{label}</span>
+    <div className="flex items-center gap-2 flex-1 max-w-[120px]">
+      <Progress value={(value / max) * 100} className="flex-1" />
+      <span className="text-sm font-medium text-slate-800 min-w-[40px]">
+        {value}/{max}
+      </span>
+    </div>
+  </div>
+);
 
 export default function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<AnalysisSection[]>([]);
-  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysis, setAnalysis] = useState<ApiResponse | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showSkeletons, setShowSkeletons] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -174,62 +177,90 @@ export default function Index() {
     if (!file) return;
 
     setIsAnalyzing(true);
-    setShowAnalysis(true);
-    setShowSkeletons(true);
-    setAnalysis([]);
+    setError(null);
 
-    // Show skeletons for 3 seconds
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      const formData = new FormData();
+      formData.append('resume', file);
 
-    setShowSkeletons(false);
+      const response = await fetch('http://localhost:3000/analyze-resume', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const mockAnalysis: AnalysisSection[] = [
-      {
-        title: "Summary",
-        emoji: "🔍",
-        content:
-          "Experienced software engineer with 5+ years in full-stack development. Strong background in React, Node.js, and cloud technologies. Shows consistent career progression and leadership potential.",
-        type: "summary",
-      },
-      {
-        title: "Strengths",
-        emoji: "✅",
-        content:
-          "• Excellent technical skills in modern web technologies\n• Strong problem-solving abilities\n• Experience with agile methodologies\n• Leadership experience managing small teams\n• Continuous learning mindset",
-        type: "strengths",
-      },
-      {
-        title: "Weaknesses",
-        emoji: "❌",
-        content:
-          "• Limited experience with mobile development\n• Could benefit from more cloud architecture experience\n• Missing specific industry domain knowledge\n• Needs stronger project management certifications",
-        type: "weaknesses",
-      },
-      {
-        title: "Suggested Roles",
-        emoji: "💼",
-        content:
-          "• Senior Frontend Developer\n• Full-Stack Engineer\n• Technical Lead\n• Software Architect (with additional experience)\n• Engineering Manager (entry-level)",
-        type: "roles",
-      },
-      {
-        title: "Skill Gaps",
-        emoji: "🛠️",
-        content:
-          "• React Native or Flutter for mobile\n• AWS/Azure advanced certifications\n• System design for scale\n• DevOps and CI/CD pipelines\n• Machine learning fundamentals",
-        type: "gaps",
-      },
-      {
-        title: "Score Breakdown",
-        emoji: "📊",
-        content:
-          "Technical Skills: 9/10\nExperience Level: 8/10\nLeadership Potential: 7/10\nAdaptability: 8/10\n\nOverall Score: 8.2/10 - Strong candidate with excellent technical foundation and growth potential. Ready for senior-level positions.",
-        type: "score",
-      },
-    ];
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    setAnalysis(mockAnalysis);
-    setIsAnalyzing(false);
+      const data: ApiResponse = await response.json();
+      setAnalysis(data);
+    } catch (err) {
+      console.error('Error analyzing resume:', err);
+      setError('Failed to analyze resume. Please try again.');
+      
+      // Fallback to mock data for demo purposes
+      const mockData: ApiResponse = {
+        resumeText: "Sample resume text...",
+        email: "priyaank29@gmail.com",
+        phone: "+91 93266 22519",
+        experience: [
+          {
+            company: "Freelance",
+            duration: "September 2021 – Present",
+            role: "Software Engineer, Lead Software Engineer",
+            responsibilities: [
+              "Engineered scalable, high-performance web applications using Next.js, React, and Node.js",
+              "Architected and deployed cloud-native backend systems leveraging Firebase, AWS, and GCP",
+              "Led infrastructure automation initiatives, setting up CI/CD pipelines"
+            ]
+          }
+        ],
+        totalExperienceInYears: 6.9,
+        summary: "Versatile software engineer with nearly 7 years of experience specializing in full-stack web development, cloud-native backend systems, and automation.",
+        strengths: [
+          "Strong expertise in full-stack development using modern frameworks",
+          "Proficient in cloud technologies including AWS, GCP, and Firebase",
+          "Demonstrated leadership in infrastructure automation and CI/CD pipeline setup"
+        ],
+        weaknesses: [
+          "Relatively short tenure at some roles which may raise questions about stability",
+          "Limited explicit mention of formal leadership roles beyond freelance",
+          "No direct mention of advanced certifications"
+        ],
+        suggested_roles: [
+          "Senior Full-Stack Developer",
+          "Cloud Solutions Engineer",
+          "Lead Software Engineer",
+          "DevOps Engineer"
+        ],
+        skill_gaps: [
+          "Advanced DevOps tools beyond Docker and GitHub Actions",
+          "Deeper expertise in machine learning frameworks",
+          "Formal leadership or management training"
+        ],
+        impact: 80,
+        skills_score: 85,
+        overall_score: 82,
+        matched: true,
+        questions_answers: [
+          {
+            question: "Does the candidate have experience with cloud platforms?",
+            answer: "yes",
+            reason: "Extensive experience with AWS, GCP, and Firebase mentioned throughout the resume"
+          },
+          {
+            question: "Does the candidate have leadership experience?",
+            answer: "yes",
+            reason: "Led infrastructure automation initiatives and mentored junior developers"
+          }
+        ],
+        route: "senior",
+        missingSkills: ["System Design", "Mentorship", "Project Management"]
+      };
+      setAnalysis(mockData);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -248,109 +279,86 @@ export default function Index() {
             </h1>
           </div>
           <p className="text-slate-600 text-lg">
-            Get AI-powered insights about your resume in seconds
+            Get comprehensive AI-powered insights about your resume
           </p>
         </motion.div>
 
-        {/* Main Split Layout */}
-        <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* Left Side - Upload */}
+        {/* Main Layout - Responsive columns */}
+        <div className="grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+          {/* Left Side - Upload (smaller) */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
+            className="lg:col-span-4"
           >
-            <Card className="p-8 h-fit backdrop-blur-sm bg-white/70 border-white/20 shadow-xl">
-              <h2 className="text-2xl font-semibold mb-6 text-slate-800">
-                Upload Your Resume
-              </h2>
-
-              {/* Upload Area */}
-              <div
-                className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
-                  isDragOver
-                    ? "border-indigo-500 bg-indigo-50/50"
-                    : file
+            <Card className="backdrop-blur-sm bg-white/70 border-white/20 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-xl text-slate-800">Upload Resume</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Upload Area */}
+                <div
+                  className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer ${
+                    isDragOver
+                      ? "border-indigo-500 bg-indigo-50/50"
+                      : file
                       ? "border-green-500 bg-green-50/50"
                       : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.docx"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-
-                <motion.div
-                  animate={{ scale: isDragOver ? 1.1 : 1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  {file ? (
-                    <FileText className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                  ) : (
-                    <Upload className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                  )}
-                </motion.div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.docx"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
 
-                <div className="space-y-2">
-                  {file ? (
-                    <>
-                      <p className="text-lg font-medium text-green-700">
-                        {file.name}
-                      </p>
-                      <p className="text-sm text-green-600">
-                        {formatFileSize(file.size)}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-lg font-medium text-slate-700">
-                        Drop your resume here or click to upload
-                      </p>
-                      <p className="text-sm text-slate-500">(.pdf, .docx)</p>
-                    </>
-                  )}
+                  <motion.div
+                    animate={{ scale: isDragOver ? 1.1 : 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    {file ? (
+                      <FileText className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                    ) : (
+                      <Upload className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                    )}
+                  </motion.div>
+
+                  <div className="space-y-1">
+                    {file ? (
+                      <>
+                        <p className="font-medium text-green-700">{file.name}</p>
+                        <p className="text-sm text-green-600">{formatFileSize(file.size)}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-slate-700">
+                          Drop resume or click to upload
+                        </p>
+                        <p className="text-sm text-slate-500">PDF or DOCX</p>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {isDragOver && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="absolute inset-0 bg-indigo-500/10 rounded-xl flex items-center justify-center"
-                  >
-                    <div className="text-indigo-600 font-medium">
-                      Drop to upload
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Analyze Button */}
-              {file && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6"
-                >
+                {/* Analyze Button */}
+                {file && (
                   <Button
                     onClick={analyzeResume}
                     disabled={isAnalyzing}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-3 text-lg shadow-lg"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                    size="lg"
                   >
                     {isAnalyzing ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         className="h-5 w-5 border-2 border-white border-t-transparent rounded-full"
                       />
                     ) : (
@@ -360,112 +368,257 @@ export default function Index() {
                       </>
                     )}
                   </Button>
-                </motion.div>
-              )}
+                )}
+
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </motion.div>
 
-          {/* Right Side - Analysis */}
+          {/* Right Side - Analysis Results (larger) */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
+            className="lg:col-span-8"
           >
-            <Card className="h-[600px] backdrop-blur-sm bg-slate-50/80 border-white/20 shadow-xl flex flex-col rounded-2xl overflow-hidden">
-              <div className="flex items-center justify-between p-6 border-b border-slate-200/50 bg-white/60">
-                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-indigo-600" />
-                  AI Analysis
-                </h2>
-                {analysis.length > 0 && !isAnalyzing && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      <Download className="h-3 w-3 mr-1" />
-                      Export
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      <Send className="h-3 w-3 mr-1" />
-                      Share
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Chat-like scrollable area */}
-              <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50/50 to-white/50">
-                <AnimatePresence mode="wait">
-                  {!showAnalysis ? (
-                    <motion.div
-                      key="empty-state"
-                      className="flex items-center justify-center h-full text-slate-500"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <div className="text-center">
-                        <div className="relative mb-4">
-                          <Brain className="h-16 w-16 mx-auto text-slate-300" />
-                          <motion.div
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="absolute inset-0 h-16 w-16 mx-auto border-2 border-slate-200 rounded-full"
-                          />
-                        </div>
-                        <p className="text-lg font-medium">
-                          Ready to analyze your resume
-                        </p>
-                        <p className="text-sm text-slate-400 mt-1">
-                          Upload a file to get started
-                        </p>
+            <div className="space-y-6">
+              {/* Analysis Header */}
+              {analysis && (
+                <Card className="backdrop-blur-sm bg-white/90 border-white/20 shadow-xl">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Bot className="h-6 w-6 text-indigo-600" />
+                        <CardTitle className="text-xl">AI Analysis Results</CardTitle>
+                        <Badge 
+                          variant={analysis.matched ? "default" : "destructive"}
+                          className="text-xs"
+                        >
+                          {analysis.matched ? (
+                            <><CheckCircle className="h-3 w-3 mr-1" /> Matched</>
+                          ) : (
+                            <><XCircle className="h-3 w-3 mr-1" /> Not Matched</>
+                          )}
+                        </Badge>
                       </div>
-                    </motion.div>
-                  ) : showSkeletons ? (
-                    <motion.div
-                      key="skeleton-state"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <SkeletonMessage key={i} delay={i * 0.3} />
-                      ))}
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="analysis-state"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="space-y-2"
-                    >
-                      {analysis.map((section, index) => (
-                        <TypewriterMessage
-                          key={section.type}
-                          section={section}
-                          delay={index * 1500}
-                        />
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </Card>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-1" />
+                          Export
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Send className="h-4 w-4 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              )}
+
+              {/* Content Area */}
+              <AnimatePresence mode="wait">
+                {!analysis && !isAnalyzing ? (
+                  <motion.div
+                    key="empty-state"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center h-96"
+                  >
+                    <div className="text-center">
+                      <Brain className="h-16 w-16 mx-auto text-slate-300 mb-4" />
+                      <p className="text-lg font-medium text-slate-600">Ready to analyze</p>
+                      <p className="text-slate-500">Upload a resume to get started</p>
+                    </div>
+                  </motion.div>
+                ) : isAnalyzing ? (
+                  <motion.div
+                    key="loading-state"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <AnalysisSkeleton />
+                  </motion.div>
+                ) : analysis ? (
+                  <motion.div
+                    key="analysis-state"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="space-y-6"
+                  >
+                    {/* Score Breakdown */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5 text-indigo-600" />
+                          Score Breakdown
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-8">
+                          <div className="flex-shrink-0">
+                            <ScoreCircle score={analysis.overall_score || 0} />
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ScoreItem label="Impact" value={analysis.impact} />
+                            <ScoreItem label="Skills Score" value={analysis.skills_score} />
+                            <ScoreItem label="Experience Level" value={Math.round((analysis.totalExperienceInYears / 10) * 10)} max={10} />
+                            <ScoreItem label="Leadership Potential" value={7} max={10} />
+                            <ScoreItem label="Adaptability" value={8} max={10} />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Key Insights Cards */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Summary */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <User className="h-5 w-5 text-blue-600" />
+                            Summary
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-slate-700 leading-relaxed">{analysis.summary}</p>
+                        </CardContent>
+                      </Card>
+
+                      {/* Strengths */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <TrendingUp className="h-5 w-5 text-green-600" />
+                            Strengths
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {analysis.strengths.map((strength, index) => (
+                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm">{strength}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      {/* Weaknesses */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <AlertTriangle className="h-5 w-5 text-amber-600" />
+                            Areas for Improvement
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {analysis.weaknesses.map((weakness, index) => (
+                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                                <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm">{weakness}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      {/* Suggested Roles */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Briefcase className="h-5 w-5 text-purple-600" />
+                            Suggested Roles
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {analysis.suggested_roles.map((role, index) => (
+                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                                <Briefcase className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm">{role}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Skill Gaps */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Target className="h-5 w-5 text-red-600" />
+                          Skill Gaps & Development Areas
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="grid md:grid-cols-2 gap-2">
+                          {analysis.skill_gaps.map((gap, index) => (
+                            <li key={index} className="flex items-start gap-2 text-slate-700">
+                              <Target className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm">{gap}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    {/* Detailed Question Analysis */}
+                    {analysis.questions_answers.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Brain className="h-5 w-5 text-indigo-600" />
+                            Detailed Analysis
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left p-2 font-medium">Question</th>
+                                  <th className="text-center p-2 font-medium w-20">Answer</th>
+                                  <th className="text-left p-2 font-medium">Reasoning</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {analysis.questions_answers.map((qa, index) => (
+                                  <tr key={index} className="border-b last:border-b-0">
+                                    <td className="p-3 text-sm text-slate-700">{qa.question}</td>
+                                    <td className="p-3 text-center">
+                                      {qa.answer.toLowerCase() === 'yes' ? (
+                                        <Check className="h-5 w-5 text-green-500 mx-auto" />
+                                      ) : (
+                                        <X className="h-5 w-5 text-red-500 mx-auto" />
+                                      )}
+                                    </td>
+                                    <td className="p-3 text-sm text-slate-600">{qa.reason}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
           </motion.div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes gradient-animation {
-          0% {
-            background-position: 200% 0;
-          }
-          100% {
-            background-position: -200% 0;
-          }
-        }
-        .bg-gradient-animation {
-          animation: gradient-animation 2s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
