@@ -523,13 +523,13 @@ export default function Index() {
                               label="Skills Score"
                               value={analysis.skills_score}
                             />
-                            // <ScoreItem
-                            //   label="Experience Level"
-                            //   value={Math.round(
-                            //     (analysis.totalExperienceInYears / 10) * 10,
-                            //   )}
-                            //   max={10}
-                            // />
+                            <ScoreItem
+                              label="Experience Level"
+                              value={Math.round(
+                                (analysis.totalExperienceInYears / 10) * 10,
+                              )}
+                              max={10}
+                            />
                             <ScoreItem
                               label="Leadership Potential"
                               value={7}
