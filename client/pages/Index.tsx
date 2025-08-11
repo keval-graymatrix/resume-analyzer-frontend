@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import jsPDF from "jspdf";
 import {
   Upload,
   FileText,
@@ -186,183 +185,6 @@ export default function Index() {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
-  const exportToPDF = () => {
-    if (!analysis) return;
-
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let yPosition = 20;
-
-    // Helper function to add text with word wrapping
-    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize = 11) => {
-      doc.setFontSize(fontSize);
-      const splitText = doc.splitTextToSize(text, maxWidth);
-      doc.text(splitText, x, y);
-      return y + (splitText.length * fontSize * 0.4);
-    };
-
-    // Helper function to check if we need a new page
-    const checkNewPage = (requiredSpace: number) => {
-      if (yPosition + requiredSpace > pageHeight - 20) {
-        doc.addPage();
-        yPosition = 20;
-      }
-    };
-
-    // Title
-    doc.setFontSize(20);
-    doc.setFont(undefined, 'bold');
-    doc.text('Resume Analysis Report', 20, yPosition);
-    yPosition += 15;
-
-    // Matched Badge
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    const matchedText = analysis.matched ? '✓ MATCHED' : '✗ NOT MATCHED';
-    const matchedColor = analysis.matched ? [34, 197, 94] : [239, 68, 68];
-    doc.setTextColor(matchedColor[0], matchedColor[1], matchedColor[2]);
-    doc.text(matchedText, 20, yPosition);
-    doc.setTextColor(0, 0, 0); // Reset to black
-    yPosition += 15;
-
-    // Score Breakdown Section
-    checkNewPage(60);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('📊 Score Breakdown', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Overall Score: ${analysis.overall_score || 0}/100`, 20, yPosition);
-    yPosition += 8;
-    doc.text(`Years of Experience: ${analysis.totalExperienceInYears}`, 20, yPosition);
-    yPosition += 8;
-    doc.text(`Impact Score: ${analysis.impact}/100`, 20, yPosition);
-    yPosition += 8;
-    doc.text(`Skills Score: ${analysis.skills_score}/100`, 20, yPosition);
-    yPosition += 15;
-
-    // Summary Section
-    checkNewPage(40);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('👤 Summary', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFont(undefined, 'normal');
-    yPosition = addWrappedText(analysis.summary, 20, yPosition, pageWidth - 40);
-    yPosition += 10;
-
-    // Strengths Section
-    checkNewPage(30 + analysis.strengths.length * 8);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('📈 Strengths', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.strengths.forEach(strength => {
-      checkNewPage(10);
-      yPosition = addWrappedText(`• ${strength}`, 25, yPosition, pageWidth - 50);
-      yPosition += 2;
-    });
-    yPosition += 8;
-
-    // Weaknesses Section
-    checkNewPage(30 + analysis.weaknesses.length * 8);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('⚠️ Areas for Improvement', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.weaknesses.forEach(weakness => {
-      checkNewPage(10);
-      yPosition = addWrappedText(`• ${weakness}`, 25, yPosition, pageWidth - 50);
-      yPosition += 2;
-    });
-    yPosition += 8;
-
-    // Suggested Roles Section
-    checkNewPage(30 + analysis.suggested_roles.length * 8);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('💼 Suggested Roles', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.suggested_roles.forEach(role => {
-      checkNewPage(10);
-      yPosition = addWrappedText(`• ${role}`, 25, yPosition, pageWidth - 50);
-      yPosition += 2;
-    });
-    yPosition += 8;
-
-    // Skill Gaps Section
-    checkNewPage(30 + analysis.skill_gaps.length * 8);
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('🎯 Skill Gaps & Development Areas', 20, yPosition);
-    yPosition += 10;
-
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.skill_gaps.forEach(gap => {
-      checkNewPage(10);
-      yPosition = addWrappedText(`• ${gap}`, 25, yPosition, pageWidth - 50);
-      yPosition += 2;
-    });
-    yPosition += 8;
-
-    // Question Analysis Section
-    if (analysis.questions_answers.length > 0) {
-      checkNewPage(40);
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('🧠 Detailed Analysis', 20, yPosition);
-      yPosition += 15;
-
-      analysis.questions_answers.forEach((qa, index) => {
-        checkNewPage(25);
-
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        yPosition = addWrappedText(`Q${index + 1}: ${qa.question}`, 20, yPosition, pageWidth - 40, 12);
-        yPosition += 3;
-
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-        const answerSymbol = qa.answer.toLowerCase() === 'yes' ? '✓' : '✗';
-        const answerColor = qa.answer.toLowerCase() === 'yes' ? [34, 197, 94] : [239, 68, 68];
-        doc.setTextColor(answerColor[0], answerColor[1], answerColor[2]);
-        doc.text(`${answerSymbol} ${qa.answer.toUpperCase()}`, 20, yPosition);
-        doc.setTextColor(0, 0, 0); // Reset to black
-        yPosition += 8;
-
-        yPosition = addWrappedText(`Reason: ${qa.reason}`, 20, yPosition, pageWidth - 40);
-        yPosition += 10;
-      });
-    }
-
-    // Footer
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(8);
-      doc.setTextColor(128, 128, 128);
-      doc.text(`Generated by Resume Analyzer - Page ${i} of ${totalPages}`, 20, pageHeight - 10);
-      doc.text(new Date().toLocaleDateString(), pageWidth - 40, pageHeight - 10);
-    }
-
-    // Save the PDF
-    doc.save('resume-analysis.pdf');
   };
 
   const analyzeResume = async () => {
@@ -632,7 +454,7 @@ export default function Index() {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={exportToPDF}>
+                        <Button variant="outline" size="sm">
                           <Download className="h-4 w-4 mr-1" />
                           Export
                         </Button>
