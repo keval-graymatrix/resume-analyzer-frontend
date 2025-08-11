@@ -197,7 +197,8 @@ export default function Index() {
       // Convert file to base64
       const fileBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result?.toString().split(",")[1] || "");
+        reader.onload = () =>
+          resolve(reader.result?.toString().split(",")[1] || "");
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
@@ -226,13 +227,14 @@ export default function Index() {
       setError("Failed to analyze resume. Please try again.");
 
       // fallback mock data...
-      const mockData: ApiResponse = { /* your mock object here */ };
+      const mockData: ApiResponse = {
+        /* your mock object here */
+      };
       setAnalysis(mockData);
     } finally {
       setIsAnalyzing(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -276,8 +278,8 @@ export default function Index() {
                     isDragOver
                       ? "border-indigo-500 bg-indigo-50/50"
                       : file
-                        ? "border-green-500 bg-green-50/50"
-                        : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
+                      ? "border-green-500 bg-green-50/50"
+                      : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -466,7 +468,7 @@ export default function Index() {
                             <ScoreItem
                               label="Experience Level"
                               value={Math.round(
-                                (analysis.totalExperienceInYears / 10) * 10,
+                                (analysis.totalExperienceInYears / 10) * 10
                               )}
                               max={10}
                             />
