@@ -517,28 +517,15 @@ export default function Index() {
                           <div className="flex-shrink-0">
                             <ScoreCircle score={analysis.overall_score || 0} />
                           </div>
-                          <div className="flex-1 space-y-3">
+                          <div className="flex-1 space-y-4">
+                            <div className="text-center mb-4">
+                              <div className="text-2xl font-bold text-slate-800">{analysis.totalExperienceInYears}</div>
+                              <div className="text-sm text-slate-500">Years of Experience</div>
+                            </div>
                             <ScoreItem label="Impact" value={analysis.impact} />
                             <ScoreItem
                               label="Skills Score"
                               value={analysis.skills_score}
-                            />
-                            <ScoreItem
-                              label="Experience Level"
-                              value={Math.round(
-                                (analysis.totalExperienceInYears / 10) * 10,
-                              )}
-                              max={10}
-                            />
-                            <ScoreItem
-                              label="Leadership Potential"
-                              value={7}
-                              max={10}
-                            />
-                            <ScoreItem
-                              label="Adaptability"
-                              value={8}
-                              max={10}
                             />
                           </div>
                         </div>
