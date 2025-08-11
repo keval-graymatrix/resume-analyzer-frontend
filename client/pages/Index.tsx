@@ -232,7 +232,7 @@ export default function Index() {
     checkNewPage(60);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('���� Score Breakdown', 20, yPosition);
+    doc.text('SCORE BREAKDOWN', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(12);
@@ -250,7 +250,7 @@ export default function Index() {
     checkNewPage(40);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('👤 Summary', 20, yPosition);
+    doc.text('SUMMARY', 20, yPosition);
     yPosition += 10;
 
     doc.setFont(undefined, 'normal');
@@ -261,14 +261,14 @@ export default function Index() {
     checkNewPage(30 + analysis.strengths.length * 8);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('📈 Strengths', 20, yPosition);
+    doc.text('STRENGTHS', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     analysis.strengths.forEach(strength => {
       checkNewPage(10);
-      yPosition = addWrappedText(`• ${strength}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(`+ ${strength}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
     });
     yPosition += 8;
@@ -277,14 +277,14 @@ export default function Index() {
     checkNewPage(30 + analysis.weaknesses.length * 8);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('⚠️ Areas for Improvement', 20, yPosition);
+    doc.text('AREAS FOR IMPROVEMENT', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     analysis.weaknesses.forEach(weakness => {
       checkNewPage(10);
-      yPosition = addWrappedText(`• ${weakness}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(`- ${weakness}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
     });
     yPosition += 8;
@@ -293,14 +293,14 @@ export default function Index() {
     checkNewPage(30 + analysis.suggested_roles.length * 8);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('💼 Suggested Roles', 20, yPosition);
+    doc.text('SUGGESTED ROLES', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     analysis.suggested_roles.forEach(role => {
       checkNewPage(10);
-      yPosition = addWrappedText(`• ${role}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(`* ${role}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
     });
     yPosition += 8;
@@ -309,14 +309,14 @@ export default function Index() {
     checkNewPage(30 + analysis.skill_gaps.length * 8);
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
-    doc.text('🎯 Skill Gaps & Development Areas', 20, yPosition);
+    doc.text('SKILL GAPS & DEVELOPMENT AREAS', 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     analysis.skill_gaps.forEach(gap => {
       checkNewPage(10);
-      yPosition = addWrappedText(`• ${gap}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(`> ${gap}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
     });
     yPosition += 8;
@@ -326,7 +326,7 @@ export default function Index() {
       checkNewPage(40);
       doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
-      doc.text('🧠 Detailed Analysis', 20, yPosition);
+      doc.text('DETAILED ANALYSIS', 20, yPosition);
       yPosition += 15;
 
       analysis.questions_answers.forEach((qa, index) => {
