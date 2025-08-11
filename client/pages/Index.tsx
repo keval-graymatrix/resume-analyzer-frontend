@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Upload, 
-  FileText, 
-  Brain, 
-  Download, 
-  Send, 
-  Bot, 
-  CheckCircle, 
+import {
+  Upload,
+  FileText,
+  Brain,
+  Download,
+  Send,
+  Bot,
+  CheckCircle,
   XCircle,
   User,
   TrendingUp,
@@ -16,7 +16,7 @@ import {
   Target,
   BarChart3,
   Check,
-  X
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,7 +74,13 @@ const AnalysisSkeleton = () => (
 );
 
 // Score Circle Component
-const ScoreCircle = ({ score, size = 120 }: { score: number; size?: number }) => {
+const ScoreCircle = ({
+  score,
+  size = 120,
+}: {
+  score: number;
+  size?: number;
+}) => {
   const radius = size / 2 - 8;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
@@ -115,7 +121,15 @@ const ScoreCircle = ({ score, size = 120 }: { score: number; size?: number }) =>
 };
 
 // Individual Score Item
-const ScoreItem = ({ label, value, max = 100 }: { label: string; value: number; max?: number }) => (
+const ScoreItem = ({
+  label,
+  value,
+  max = 100,
+}: {
+  label: string;
+  value: number;
+  max?: number;
+}) => (
   <div className="flex items-center justify-between py-2">
     <span className="text-sm text-slate-600">{label}</span>
     <div className="flex items-center gap-2 flex-1 max-w-[120px]">
@@ -181,11 +195,11 @@ export default function Index() {
 
     try {
       const formData = new FormData();
-      formData.append('fileBase64', file);
-      formData.append('filename', "resume.pdf");
+      formData.append("fileBase64", file);
+      formData.append("filename", "resume.pdf");
 
-      const response = await fetch('http://localhost:3000/analyze-resume', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/analyze-resume", {
+        method: "POST",
         body: formData,
       });
 
@@ -196,9 +210,9 @@ export default function Index() {
       const data: ApiResponse = await response.json();
       setAnalysis(data);
     } catch (err) {
-      console.error('Error analyzing resume:', err);
-      setError('Failed to analyze resume. Please try again.');
-      
+      console.error("Error analyzing resume:", err);
+      setError("Failed to analyze resume. Please try again.");
+
       // Fallback to mock data for demo purposes
       const mockData: ApiResponse = {
         resumeText: "Sample resume text...",
@@ -212,32 +226,33 @@ export default function Index() {
             responsibilities: [
               "Engineered scalable, high-performance web applications using Next.js, React, and Node.js",
               "Architected and deployed cloud-native backend systems leveraging Firebase, AWS, and GCP",
-              "Led infrastructure automation initiatives, setting up CI/CD pipelines"
-            ]
-          }
+              "Led infrastructure automation initiatives, setting up CI/CD pipelines",
+            ],
+          },
         ],
         totalExperienceInYears: 6.9,
-        summary: "Versatile software engineer with nearly 7 years of experience specializing in full-stack web development, cloud-native backend systems, and automation.",
+        summary:
+          "Versatile software engineer with nearly 7 years of experience specializing in full-stack web development, cloud-native backend systems, and automation.",
         strengths: [
           "Strong expertise in full-stack development using modern frameworks",
           "Proficient in cloud technologies including AWS, GCP, and Firebase",
-          "Demonstrated leadership in infrastructure automation and CI/CD pipeline setup"
+          "Demonstrated leadership in infrastructure automation and CI/CD pipeline setup",
         ],
         weaknesses: [
           "Relatively short tenure at some roles which may raise questions about stability",
           "Limited explicit mention of formal leadership roles beyond freelance",
-          "No direct mention of advanced certifications"
+          "No direct mention of advanced certifications",
         ],
         suggested_roles: [
           "Senior Full-Stack Developer",
           "Cloud Solutions Engineer",
           "Lead Software Engineer",
-          "DevOps Engineer"
+          "DevOps Engineer",
         ],
         skill_gaps: [
           "Advanced DevOps tools beyond Docker and GitHub Actions",
           "Deeper expertise in machine learning frameworks",
-          "Formal leadership or management training"
+          "Formal leadership or management training",
         ],
         impact: 80,
         skills_score: 85,
@@ -245,18 +260,21 @@ export default function Index() {
         matched: true,
         questions_answers: [
           {
-            question: "Does the candidate have experience with cloud platforms?",
+            question:
+              "Does the candidate have experience with cloud platforms?",
             answer: "yes",
-            reason: "Extensive experience with AWS, GCP, and Firebase mentioned throughout the resume"
+            reason:
+              "Extensive experience with AWS, GCP, and Firebase mentioned throughout the resume",
           },
           {
             question: "Does the candidate have leadership experience?",
             answer: "yes",
-            reason: "Led infrastructure automation initiatives and mentored junior developers"
-          }
+            reason:
+              "Led infrastructure automation initiatives and mentored junior developers",
+          },
         ],
         route: "senior",
-        missingSkills: ["System Design", "Mentorship", "Project Management"]
+        missingSkills: ["System Design", "Mentorship", "Project Management"],
       };
       setAnalysis(mockData);
     } finally {
@@ -295,7 +313,9 @@ export default function Index() {
           >
             <Card className="backdrop-blur-sm bg-white/70 border-white/20 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-xl text-slate-800">Upload Resume</CardTitle>
+                <CardTitle className="text-xl text-slate-800">
+                  Upload Resume
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Upload Area */}
@@ -304,8 +324,8 @@ export default function Index() {
                     isDragOver
                       ? "border-indigo-500 bg-indigo-50/50"
                       : file
-                      ? "border-green-500 bg-green-50/50"
-                      : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
+                        ? "border-green-500 bg-green-50/50"
+                        : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50/50"
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -334,8 +354,12 @@ export default function Index() {
                   <div className="space-y-1">
                     {file ? (
                       <>
-                        <p className="font-medium text-green-700">{file.name}</p>
-                        <p className="text-sm text-green-600">{formatFileSize(file.size)}</p>
+                        <p className="font-medium text-green-700">
+                          {file.name}
+                        </p>
+                        <p className="text-sm text-green-600">
+                          {formatFileSize(file.size)}
+                        </p>
                       </>
                     ) : (
                       <>
@@ -359,7 +383,11 @@ export default function Index() {
                     {isAnalyzing ? (
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 1,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                         className="h-5 w-5 border-2 border-white border-t-transparent rounded-full"
                       />
                     ) : (
@@ -395,15 +423,21 @@ export default function Index() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Bot className="h-6 w-6 text-indigo-600" />
-                        <CardTitle className="text-xl">AI Analysis Results</CardTitle>
-                        <Badge 
+                        <CardTitle className="text-xl">
+                          AI Analysis Results
+                        </CardTitle>
+                        <Badge
                           variant={analysis.matched ? "default" : "destructive"}
                           className="text-xs"
                         >
                           {analysis.matched ? (
-                            <><CheckCircle className="h-3 w-3 mr-1" /> Matched</>
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" /> Matched
+                            </>
                           ) : (
-                            <><XCircle className="h-3 w-3 mr-1" /> Not Matched</>
+                            <>
+                              <XCircle className="h-3 w-3 mr-1" /> Not Matched
+                            </>
                           )}
                         </Badge>
                       </div>
@@ -434,8 +468,12 @@ export default function Index() {
                   >
                     <div className="text-center">
                       <Brain className="h-16 w-16 mx-auto text-slate-300 mb-4" />
-                      <p className="text-lg font-medium text-slate-600">Ready to analyze</p>
-                      <p className="text-slate-500">Upload a resume to get started</p>
+                      <p className="text-lg font-medium text-slate-600">
+                        Ready to analyze
+                      </p>
+                      <p className="text-slate-500">
+                        Upload a resume to get started
+                      </p>
                     </div>
                   </motion.div>
                 ) : isAnalyzing ? (
@@ -469,10 +507,27 @@ export default function Index() {
                           </div>
                           <div className="flex-1 space-y-3">
                             <ScoreItem label="Impact" value={analysis.impact} />
-                            <ScoreItem label="Skills Score" value={analysis.skills_score} />
-                            <ScoreItem label="Experience Level" value={Math.round((analysis.totalExperienceInYears / 10) * 10)} max={10} />
-                            <ScoreItem label="Leadership Potential" value={7} max={10} />
-                            <ScoreItem label="Adaptability" value={8} max={10} />
+                            <ScoreItem
+                              label="Skills Score"
+                              value={analysis.skills_score}
+                            />
+                            <ScoreItem
+                              label="Experience Level"
+                              value={Math.round(
+                                (analysis.totalExperienceInYears / 10) * 10,
+                              )}
+                              max={10}
+                            />
+                            <ScoreItem
+                              label="Leadership Potential"
+                              value={7}
+                              max={10}
+                            />
+                            <ScoreItem
+                              label="Adaptability"
+                              value={8}
+                              max={10}
+                            />
                           </div>
                         </div>
                       </CardContent>
@@ -489,7 +544,9 @@ export default function Index() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-slate-700 leading-relaxed">{analysis.summary}</p>
+                          <p className="text-slate-700 leading-relaxed">
+                            {analysis.summary}
+                          </p>
                         </CardContent>
                       </Card>
 
@@ -504,7 +561,10 @@ export default function Index() {
                         <CardContent>
                           <ul className="space-y-2">
                             {analysis.strengths.map((strength, index) => (
-                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-slate-700"
+                              >
                                 <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm">{strength}</span>
                               </li>
@@ -524,7 +584,10 @@ export default function Index() {
                         <CardContent>
                           <ul className="space-y-2">
                             {analysis.weaknesses.map((weakness, index) => (
-                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-slate-700"
+                              >
                                 <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm">{weakness}</span>
                               </li>
@@ -544,7 +607,10 @@ export default function Index() {
                         <CardContent>
                           <ul className="space-y-2">
                             {analysis.suggested_roles.map((role, index) => (
-                              <li key={index} className="flex items-start gap-2 text-slate-700">
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-slate-700"
+                              >
                                 <Briefcase className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                                 <span className="text-sm">{role}</span>
                               </li>
@@ -565,7 +631,10 @@ export default function Index() {
                       <CardContent>
                         <ul className="grid md:grid-cols-2 gap-2">
                           {analysis.skill_gaps.map((gap, index) => (
-                            <li key={index} className="flex items-start gap-2 text-slate-700">
+                            <li
+                              key={index}
+                              className="flex items-start gap-2 text-slate-700"
+                            >
                               <Target className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
                               <span className="text-sm">{gap}</span>
                             </li>
@@ -588,23 +657,36 @@ export default function Index() {
                             <table className="w-full">
                               <thead>
                                 <tr className="border-b">
-                                  <th className="text-left p-2 font-medium">Question</th>
-                                  <th className="text-center p-2 font-medium w-20">Answer</th>
-                                  <th className="text-left p-2 font-medium">Reasoning</th>
+                                  <th className="text-left p-2 font-medium">
+                                    Question
+                                  </th>
+                                  <th className="text-center p-2 font-medium w-20">
+                                    Answer
+                                  </th>
+                                  <th className="text-left p-2 font-medium">
+                                    Reasoning
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {analysis.questions_answers.map((qa, index) => (
-                                  <tr key={index} className="border-b last:border-b-0">
-                                    <td className="p-3 text-sm text-slate-700">{qa.question}</td>
+                                  <tr
+                                    key={index}
+                                    className="border-b last:border-b-0"
+                                  >
+                                    <td className="p-3 text-sm text-slate-700">
+                                      {qa.question}
+                                    </td>
                                     <td className="p-3 text-center">
-                                      {qa.answer.toLowerCase() === 'yes' ? (
+                                      {qa.answer.toLowerCase() === "yes" ? (
                                         <Check className="h-5 w-5 text-green-500 mx-auto" />
                                       ) : (
                                         <X className="h-5 w-5 text-red-500 mx-auto" />
                                       )}
                                     </td>
-                                    <td className="p-3 text-sm text-slate-600">{qa.reason}</td>
+                                    <td className="p-3 text-sm text-slate-600">
+                                      {qa.reason}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
