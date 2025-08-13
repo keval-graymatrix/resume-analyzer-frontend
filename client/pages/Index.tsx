@@ -188,6 +188,31 @@ export default function Index() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const mm2px = (mm: number) => mm * 3.78; // 96 DPI approximation
+
+  const appendEmoji = (
+    doc: jsPDF,
+    emoji: string,
+    xMm: number,
+    yMm: number,
+    sizeMm: number,
+  ) => {
+    const canvas = document.createElement("canvas");
+    const sizePx = mm2px(sizeMm);
+    canvas.width = sizePx;
+    canvas.height = sizePx;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.font = `${sizePx * 0.8}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(emoji, sizePx / 2, sizePx / 2);
+
+    doc.addImage(canvas, "PNG", xMm, yMm - sizeMm + 5, sizeMm, sizeMm);
+  };
+
   const exportToPDF = () => {
     if (!analysis) return;
 
@@ -197,11 +222,17 @@ export default function Index() {
     let yPosition = 20;
 
     // Helper function to add text with word wrapping
-    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize = 11) => {
+    const addWrappedText = (
+      text: string,
+      x: number,
+      y: number,
+      maxWidth: number,
+      fontSize = 11,
+    ) => {
       doc.setFontSize(fontSize);
       const splitText = doc.splitTextToSize(text, maxWidth);
       doc.text(splitText, x, y);
-      return y + (splitText.length * fontSize * 0.4);
+      return y + splitText.length * fontSize * 0.4;
     };
 
     // Helper function to check if we need a new page
@@ -213,15 +244,17 @@ export default function Index() {
     };
 
     // Title
+    appendEmoji(doc, "📄", 12, yPosition - 5, 6);
     doc.setFontSize(20);
-    doc.setFont(undefined, 'bold');
-    doc.text('Resume Analysis Report', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("Resume Analysis Report", 20, yPosition);
     yPosition += 15;
 
     // Matched Badge
     doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    const matchedText = analysis.matched ? '✓ MATCHED' : '✗ NOT MATCHED';
+    appendEmoji(doc, analysis.matched ? "✅" : "❌", 12, yPosition - 5, 5);
+    doc.setFont(undefined, "normal");
+    const matchedText = analysis.matched ? "MATCHED" : "NOT MATCHED";
     const matchedColor = analysis.matched ? [34, 197, 94] : [239, 68, 68];
     doc.setTextColor(matchedColor[0], matchedColor[1], matchedColor[2]);
     doc.text(matchedText, 20, yPosition);
@@ -230,16 +263,25 @@ export default function Index() {
 
     // Score Breakdown Section
     checkNewPage(60);
+    appendEmoji(doc, "📊", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('SCORE BREAKDOWN', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("SCORE BREAKDOWN", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(12);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Overall Score: ${analysis.overall_score || 0}/100`, 20, yPosition);
+    doc.setFont(undefined, "normal");
+    doc.text(
+      `Overall Score: ${analysis.overall_score || 0}/100`,
+      20,
+      yPosition,
+    );
     yPosition += 8;
-    doc.text(`Years of Experience: ${analysis.totalExperienceInYears}`, 20, yPosition);
+    doc.text(
+      `Years of Experience: ${analysis.totalExperienceInYears}`,
+      20,
+      yPosition,
+    );
     yPosition += 8;
     doc.text(`Impact Score: ${analysis.impact}/100`, 20, yPosition);
     yPosition += 8;
@@ -248,73 +290,88 @@ export default function Index() {
 
     // Summary Section
     checkNewPage(40);
+    appendEmoji(doc, "📝", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('SUMMARY', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("SUMMARY", 20, yPosition);
     yPosition += 10;
 
-    doc.setFont(undefined, 'normal');
+    doc.setFont(undefined, "normal");
     yPosition = addWrappedText(analysis.summary, 20, yPosition, pageWidth - 40);
     yPosition += 10;
 
     // Strengths Section
     checkNewPage(30 + analysis.strengths.length * 8);
+    appendEmoji(doc, "💪", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('STRENGTHS', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("STRENGTHS", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.strengths.forEach(strength => {
+    doc.setFont(undefined, "normal");
+    analysis.strengths.forEach((strength) => {
       checkNewPage(10);
-      yPosition = addWrappedText(`+ ${strength}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(
+        `> ${strength}`,
+        25,
+        yPosition,
+        pageWidth - 50,
+      );
       yPosition += 2;
     });
     yPosition += 8;
 
     // Weaknesses Section
     checkNewPage(30 + analysis.weaknesses.length * 8);
+    appendEmoji(doc, "⚠️", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('AREAS FOR IMPROVEMENT', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("AREAS FOR IMPROVEMENT", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.weaknesses.forEach(weakness => {
+    doc.setFont(undefined, "normal");
+    analysis.weaknesses.forEach((weakness) => {
       checkNewPage(10);
-      yPosition = addWrappedText(`- ${weakness}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(
+        `> ${weakness}`,
+        25,
+        yPosition,
+        pageWidth - 50,
+      );
       yPosition += 2;
     });
     yPosition += 8;
 
     // Suggested Roles Section
     checkNewPage(30 + analysis.suggested_roles.length * 8);
+    appendEmoji(doc, "🎯", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('SUGGESTED ROLES', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("SUGGESTED ROLES", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.suggested_roles.forEach(role => {
+    doc.setFont(undefined, "normal");
+    analysis.suggested_roles.forEach((role) => {
       checkNewPage(10);
-      yPosition = addWrappedText(`* ${role}`, 25, yPosition, pageWidth - 50);
+      yPosition = addWrappedText(`> ${role}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
     });
     yPosition += 8;
 
     // Skill Gaps Section
     checkNewPage(30 + analysis.skill_gaps.length * 8);
+    appendEmoji(doc, "🎯", 12, yPosition - 5, 6);
     doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('SKILL GAPS & DEVELOPMENT AREAS', 20, yPosition);
+    doc.setFont(undefined, "bold");
+    doc.text("SKILL GAPS & DEVELOPMENT AREAS", 20, yPosition);
     yPosition += 10;
 
     doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    analysis.skill_gaps.forEach(gap => {
+    doc.setFont(undefined, "normal");
+    analysis.skill_gaps.forEach((gap) => {
       checkNewPage(10);
       yPosition = addWrappedText(`> ${gap}`, 25, yPosition, pageWidth - 50);
       yPosition += 2;
@@ -324,29 +381,46 @@ export default function Index() {
     // Question Analysis Section
     if (analysis.questions_answers.length > 0) {
       checkNewPage(40);
+      appendEmoji(doc, "🔍", 12, yPosition - 5, 6);
       doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('DETAILED ANALYSIS', 20, yPosition);
+      doc.setFont(undefined, "bold");
+      doc.text("DETAILED ANALYSIS", 20, yPosition);
       yPosition += 15;
 
       analysis.questions_answers.forEach((qa, index) => {
         checkNewPage(25);
 
         doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        yPosition = addWrappedText(`Q${index + 1}: ${qa.question}`, 20, yPosition, pageWidth - 40, 12);
+        doc.setFont(undefined, "bold");
+        yPosition = addWrappedText(
+          `Q${index + 1}: ${qa.question}`,
+          20,
+          yPosition,
+          pageWidth - 40,
+          12,
+        );
         yPosition += 3;
 
+        // Answer with Icon
         doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-        const answerSymbol = qa.answer.toLowerCase() === 'yes' ? '✓' : '✗';
-        const answerColor = qa.answer.toLowerCase() === 'yes' ? [34, 197, 94] : [239, 68, 68];
+        doc.setFont(undefined, "normal");
+        const isYes = qa.answer.toLowerCase() === "yes";
+        const answerSymbol = isYes ? "✅" : "❌";
+        const answerColor = isYes ? [34, 197, 94] : [239, 68, 68];
+
+        appendEmoji(doc, answerSymbol, 20, yPosition - 3, 6);
         doc.setTextColor(answerColor[0], answerColor[1], answerColor[2]);
-        doc.text(`${answerSymbol} ${qa.answer.toUpperCase()}`, 20, yPosition);
-        doc.setTextColor(0, 0, 0); // Reset to black
+        doc.text(`${qa.answer.toUpperCase()}`, 28, yPosition);
+        doc.setTextColor(0, 0, 0);
         yPosition += 8;
 
-        yPosition = addWrappedText(`Reason: ${qa.reason}`, 20, yPosition, pageWidth - 40);
+        // Reason
+        yPosition = addWrappedText(
+          `Reason: ${qa.reason}`,
+          20,
+          yPosition,
+          pageWidth - 40,
+        );
         yPosition += 10;
       });
     }
@@ -357,46 +431,58 @@ export default function Index() {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(128, 128, 128);
-      doc.text(`Generated by Resume Analyzer - Page ${i} of ${totalPages}`, 20, pageHeight - 10);
-      doc.text(new Date().toLocaleDateString(), pageWidth - 40, pageHeight - 10);
+      doc.text(
+        `Generated by Resume Analyzer - Page ${i} of ${totalPages}`,
+        20,
+        pageHeight - 10,
+      );
+      doc.text(
+        new Date().toLocaleDateString(),
+        pageWidth - 40,
+        pageHeight - 10,
+      );
     }
 
     // Save the PDF
-    doc.save('resume-analysis.pdf');
+    doc.save("resume-analysis.pdf");
   };
 
   const analyzeResume = async () => {
     if (!file) return;
 
+    // Check file size (e.g., max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File size exceeds 5MB limit.");
+      setIsAnalyzing(false);
+      return;
+    }
+
     setIsAnalyzing(true);
     setError(null);
 
     try {
-      // Convert file to base64
-      const fileBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result?.toString().split(",")[1] || "");
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // Create FormData object and append the file
+      const formData = new FormData();
+      formData.append("file", file); // 'file' is the key expected by the backend
+      formData.append("filename", file.name); // Include filename if needed
 
-      const body = {
-        fileBase64,
-        filename: "resume.pdf",
-      };
-
+      console.log(file);
+      // Log FormData contents
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      console.log("Sending request to backend:", formData);
       const response = await fetch("http://localhost:3000/analyze-resume", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorText}`,
+        );
       }
-
       const data: ApiResponse = await response.json();
       setAnalysis(data);
     } catch (err) {
@@ -632,7 +718,11 @@ export default function Index() {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={exportToPDF}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={exportToPDF}
+                        >
                           <Download className="h-4 w-4 mr-1" />
                           Export
                         </Button>
@@ -697,8 +787,12 @@ export default function Index() {
                           </div>
                           <div className="flex-1 space-y-4">
                             <div className="text-center mb-4">
-                              <div className="text-2xl font-bold text-slate-800">{analysis.totalExperienceInYears}</div>
-                              <div className="text-sm text-slate-500">Years of Experience</div>
+                              <div className="text-2xl font-bold text-slate-800">
+                                {analysis.totalExperienceInYears}
+                              </div>
+                              <div className="text-sm text-slate-500">
+                                Years of Experience
+                              </div>
                             </div>
                             <ScoreItem label="Impact" value={analysis.impact} />
                             <ScoreItem
